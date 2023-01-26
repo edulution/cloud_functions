@@ -13,6 +13,9 @@ exports.checkFile = (req, res) => {
     if (event.type === 'MESSAGE') {
         /*Store the message text in a variable*/
         const messageText = event.message.text;
+        /*Log the message the user sent*/
+        console.log(`user: ${event.user.displayName} sent message ${messageText}`);
+
         /*Respond to hi, hello, and messages less than 3 characters*/
         if (messageText == "Hello" || messageText == "Hi" || messageText.length < 3) {
             res.send({ text: `Hello ${event.user.displayName}. \n Please message me the 3-letter acronymn of a centre and I'll let you know if we've recieved reports from there` });
@@ -55,6 +58,8 @@ exports.checkFile = (req, res) => {
                 });
         }
     } else {
+        /*Log the event type*/
+        console.log(`user: ${event.user.displayName} sent event of type ${event.type}`);
         /*If the event is not a message, ask the user to send the expected kind of message*/
         res.send({ text: `Hello ${event.user.displayName}. \n Please message me the 3-letter acronymn of a centre and I'll let you know if we've recieved reports from there` });
     }
