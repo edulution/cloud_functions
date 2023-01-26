@@ -4,13 +4,13 @@ Then posts the names of the items to an incoming webhook of a chat space*/
 const spaceWebhookURL = '';
 const bucketName = '';
 
-const {Storage} = require('@google-cloud/storage');
+const { Storage } = require('@google-cloud/storage');
 const axios = require('axios');
 
 exports.listBucketItems = async (req, res) => {
     /*Get the name of the file received*/
     const fileRecieved = req.name;
-    
+
     /*Connect to GCS*/
     const storage = new Storage();
     /*Get all files in the bucket supplied*/
