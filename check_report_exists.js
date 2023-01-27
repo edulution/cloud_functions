@@ -31,8 +31,29 @@ exports.checkFile = (req, res) => {
             const reportsBucket = storage.bucket(bucketName);
             console.log(`bucketname: ${bucketName}`);
 
+            /*Convert the filenames to a string separated by newline characters*/
+            const fileNames = reportsBucket.getFiles().map(file => file.name);
+
+            const checkFile = get_most_recent_file(fileNames, fileName);
+
+            if (checkFile) {
+                reportsBucket.file(checkFile).getMetadata()
+                    .then(metadata => {
+                        const createdTime = metadata[0].timeCreated;
+                        const modifiedTime = metadata[0].updated;
+                        res.send({ text: `Report for centre ${fileName} exists. \n Created at ${createdTime}. \n Last modified at ${modifiedTime}` });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        res.send({ text: 'An error occurred while retrieving file metadata.' });
+                    });
+
+            } else {
+                res.send({ text: 'File does not exist.' });
+            }
+
             // Check if the file exists in the bucket
-            reportsBucket.file(fileName).exists()
+            /*reportsBucket.file(checkFile).exists()
                 .then(data => {
                     const fileExists = data[0];
                     if (fileExists) {
@@ -55,7 +76,7 @@ exports.checkFile = (req, res) => {
                 .catch(err => {
                     console.error(err);
                     res.send({ text: 'An error occurred while checking file existence.' });
-                });
+                });*/
         }
     } else {
         /*Log the event type*/
@@ -91,5 +112,5 @@ function get_most_recent_file(filenames, inputString) {
         }
     }
     // Return the most recent filename or "Not found" if no matching file prefix was found
-    return mostRecentFilename ? mostRecentFilename : "Not found";
+    return mostRecentFilename ? mostRecentFilename : null;
 }
