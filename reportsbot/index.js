@@ -2,12 +2,12 @@ const { Storage } = require('@google-cloud/storage');
 const bucketName = '';
 
 const dateFormatOptions = {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
-  timeZoneName: 'short'
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    timeZoneName: 'short'
 };
 
 
@@ -43,81 +43,107 @@ exports.checkFile = (req, res) => {
             const reportsBucket = storage.bucket(bucketName);
             console.log(`bucketname: ${bucketName}`);
 
-            /* Convert the filenames to a string separated by newline characters */
+            /*Initialize an array variable to store the names of the files in the bucket*/
             fileNames = [];
+            /*Get all the files in the bucket then append them to the fileNames array*/
             reportsBucket.getFiles()
-              .then(([files]) => {
-                fileNames.push(...files.map(file => file.name));
+                .then(([files]) => {
+                    fileNames.push(...files.map(file => file.name));
 
-                const activityFile = getMostRecentFile(fileNames, 'activity', fileName);
-                const baselineFile = getMostRecentFile(fileNames, 'baseline', fileName);
+                    /*Get the most recent activity file using the getMostRecentFile function*/
+                    const activityFile = getMostRecentFile(fileNames, 'activity', fileName);
+                    /*Get the most recent baseline file using the getMostRecentFile function*/
+                    const baselineFile = getMostRecentFile(fileNames, 'baseline', fileName);
 
-                console.log(`most recent activity file: ${activityFile}`);
-                console.log(`most recent baseline file: ${baselineFile}`);
+                    console.log(`most recent activity file: ${activityFile}`);
+                    console.log(`most recent baseline file: ${baselineFile}`);
 
-                if (activityFile && baselineFile) {
-                    const activityFileObj = reportsBucket.file(activityFile);
-                    const baselineFileObj = reportsBucket.file(baselineFile);
+                    /*If both an activity file and baseline file are found*/
+                    if (activityFile && baselineFile) {
+                        /*Store a reference to the activityFile object*/
+                        const activityFileObj = reportsBucket.file(activityFile);
+                        /*Store a reference to the baselineFile object*/
+                        const baselineFileObj = reportsBucket.file(baselineFile);
 
-                    Promise.all([
-                        activityFileObj.getMetadata(),
-                        baselineFileObj.getMetadata()
-                    ]).then(([activityMetadata, baselineMetadata]) => {
-                        const activitySize = convertBytesToKB(activityMetadata[0].size) + "KB";
-                        const activityCreatedTime = new Date(activityMetadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                        /*Get the metadata for both the activity file and baseline file objects*/
+                        Promise.all([
+                            activityFileObj.getMetadata(),
+                            baselineFileObj.getMetadata()
+                        ]).then(([activityMetadata, baselineMetadata]) => {
+                            /*Get the size and created time. */
+                            /*Convert the size from bytes to KB*/
+                            /*Convert the created time to a more readable format*/
+                            const activitySize = convertBytesToKB(activityMetadata[0].size) + "KB";
+                            const activityCreatedTime = new Date(activityMetadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
 
-                        const baselineSize = convertBytesToKB(baselineMetadata[0].size) + "KB";
-                        const baselineCreatedTime = new Date (baselineMetadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                            const baselineSize = convertBytesToKB(baselineMetadata[0].size) + "KB";
+                            const baselineCreatedTime = new Date(baselineMetadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
 
-                        res.send({
-                            text: `Report for centre *${fileName}* found.\nActivity File:\n
+                            /*Send a response containing the size and created time for both activity and baseline files*/
+                            res.send({
+                                text: `Report for centre *${fileName}* found.\nActivity File:\n
                             size=${activitySize}\ncreated on ${activityCreatedTime}\n\nBaseline File:\nsize=${baselineSize}\ncreated on ${baselineCreatedTime}`
+                            });
+                        }).catch(err => {
+                            /*Catch any errors and print them to the console*/
+                            console.error(err);
+                            /*Send a message back to the user that an error has occured*/
+                            res.send({ text: 'An error occurred while retrieving file metadata.' });
                         });
-                    }).catch(err => {
-                        console.error(err);
-                        res.send({ text: 'An error occurred while retrieving file metadata.' });
-                    });
-                } else if (activityFile) {
-                reportsBucket.file(activityFile).getMetadata()
-                    .then(metadata => {
-                        const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
-	
-                        res.send({
-                            text: `Report for centre ${fileName} exists.\nActivity File: size=${metadata[0].size}, created at ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
-                        });
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        res.send({ text: 'An error occurred while retrieving file metadata.' });
-                    });
-            } else if (baselineFile) {
-                reportsBucket.file(baselineFile).getMetadata()
-                    .then(metadata => {
-                        const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                    } else if (activityFile) {
+                        /*If only an activity file has been found*/
+                        /*Get the metadata of the file then get the size and created time*/
+                        reportsBucket.file(activityFile).getMetadata()
+                            .then(metadata => {
+                                const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                                /*Send a message back to the user with the details of the activity file*/
+                                /*Include in the message that no baseline file was found*/
+                                res.send({
+                                    text: `Report for centre ${fileName} exists.\nActivity File: size=${metadata[0].size}, created at ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
+                                });
+                            })
+                            .catch(err => {
+                                /*Catch any errors and print them to the console*/
+                                console.error(err);
+                                /*Send a message back to the user that an error has occured*/
+                                res.send({ text: 'An error occurred while retrieving file metadata.' });
+                            });
+                    } else if (baselineFile) {
+                        /*If only a baseline file has been found*/
+                        /*Get the metadata of the file then get the size and created time*/
+                        reportsBucket.file(baselineFile).getMetadata()
+                            .then(metadata => {
+                                const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                                /*Send a message back to the user with the details of the baseline file*/
+                                /*Include in the message that no activity file was found*/
+                                res.send({
+                                    text: `Report for centre *${fileName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\ncreated at ${createdTime}`
+                                });
+                            })
+                            .catch(err => {
+                                /*Catch any errors and print them to the console*/
+                                console.error(err);
+                                /*Send a message back to the user that an error has occured*/
+                                res.send({ text: 'An error occurred while retrieving file metadata.' });
+                            });
+                    } else {
+                        /*If none of the conditions above are satified*/
+                        /* Log the event type */
+                        console.log(`user: ${event.user.displayName} sent event of type ${event.type}`);
+                        /* If the event is not a message, ask the user to send the expected kind of message */
+                        res.send({ text: `Hello ${event.user.displayName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there` });
+                    }
 
-                        res.send({
-                            text: `Report for centre *${fileName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\ncreated at ${createdTime}`
-                        });
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        res.send({ text: 'An error occurred while retrieving file metadata.' });
-                    });
-            } else {
-                /* Log the event type */
-                console.log(`user: ${event.user.displayName} sent event of type ${event.type}`);
-                /* If the event is not a message, ask the user to send the expected kind of message */
-                res.send({ text: `Hello ${event.user.displayName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there` });
-            }
-                
 
-              })
-              .catch(err => {
-                console.error(err);
-                res.send({ text: 'An error occurred. Please try again later' });
-              });
+                })
+                .catch(err => {
+                    /*Catch any errors and print them to the console*/
+                    console.error(err);
+                    /*Send a message back to the user that an error has occured*/
+                    res.send({ text: 'An error occurred. Please try again later' });
+                });
 
-            
+
 
 
         }
@@ -145,9 +171,9 @@ function getMostRecentFile(filenames, reportType, centreId) {
     return mostRecentFilename || 'No file found';
 }
 
-
+/*Function to convert Bytes to KB*/
 function convertBytesToKB(fileSizeInBytes) {
-  const fileSizeInKB = fileSizeInBytes / 1024; // Convert bytes to kilobytes
-  const roundedSizeInKB = fileSizeInKB.toFixed(2); // Round off to 2 decimal places
-  return roundedSizeInKB;
+    const fileSizeInKB = fileSizeInBytes / 1024; // Convert bytes to kilobytes
+    const roundedSizeInKB = fileSizeInKB.toFixed(2); // Round off to 2 decimal places
+    return roundedSizeInKB;
 }
