@@ -4,7 +4,6 @@ Then posts the names of the file to an incoming webhook of a chat space*/
 const spaceWebhookURL = '';
 const bucketName = '';
 
-const { Storage } = require('@google-cloud/storage');
 const axios = require('axios');
 
 exports.notifyFileReceived = async (req, res) => {
