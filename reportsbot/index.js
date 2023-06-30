@@ -43,6 +43,9 @@ exports.checkFile = (req, res) => {
             const reportsBucket = storage.bucket(bucketName);
             console.log(`bucketname: ${bucketName}`);
 
+            const userTimezone = req.headers['x-timezone'];
+            const userLocale = req.headers['accept-language'];
+
             /*Initialize an array variable to store the names of the files in the bucket*/
             fileNames = [];
             /*Get all the files in the bucket then append them to the fileNames array*/
@@ -74,15 +77,14 @@ exports.checkFile = (req, res) => {
                             /*Convert the size from bytes to KB*/
                             /*Convert the created time to a more readable format*/
                             const activitySize = convertBytesToKB(activityMetadata[0].size) + "KB";
-                            const activityCreatedTime = new Date(activityMetadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                            const activityCreatedTime = new Date(activityMetadata[0].timeCreated).toLocaleDateString(userLocale, { ...dateFormatOptions, timeZone: userTimezone });
 
                             const baselineSize = convertBytesToKB(baselineMetadata[0].size) + "KB";
-                            const baselineCreatedTime = new Date(baselineMetadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                            const baselineCreatedTime = new Date(baselineMetadata[0].timeCreated).toLocaleDateString(userLocale, { ...dateFormatOptions, timeZone: userTimezone });
 
                             /*Send a response containing the size and created time for both activity and baseline files*/
                             res.send({
-                                text: `Report for centre *${fileName}* found.\nActivity File:\n
-                            size=${activitySize}\ncreated on ${activityCreatedTime}\n\nBaseline File:\nsize=${baselineSize}\ncreated on ${baselineCreatedTime}`
+                                text: `Report for centre *${fileName}* found.\n*Activity File*:\nsize:${activitySize}\nreceived on ${activityCreatedTime}\n\n*Baseline File (tests)*:\nsize:${baselineSize}\nreceived on ${baselineCreatedTime}`
                             });
                         }).catch(err => {
                             /*Catch any errors and print them to the console*/
@@ -99,7 +101,7 @@ exports.checkFile = (req, res) => {
                                 /*Send a message back to the user with the details of the activity file*/
                                 /*Include in the message that no baseline file was found*/
                                 res.send({
-                                    text: `Report for centre ${fileName} exists.\nActivity File: size=${metadata[0].size}, created at ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
+                                    text: `Report for centre ${fileName} exists.\n*Activity File*: size:${metadata[0].size}, received on: ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
                                 });
                             })
                             .catch(err => {
@@ -117,7 +119,7 @@ exports.checkFile = (req, res) => {
                                 /*Send a message back to the user with the details of the baseline file*/
                                 /*Include in the message that no activity file was found*/
                                 res.send({
-                                    text: `Report for centre *${fileName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\ncreated at ${createdTime}`
+                                    text: `Report for centre *${fileName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\nreceived on: ${createdTime}`
                                 });
                             })
                             .catch(err => {
