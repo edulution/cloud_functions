@@ -3,3 +3,4 @@ pensamentos*
 __pycache__
 node_modules
 dummy_reports
+.env
