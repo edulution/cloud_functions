@@ -1,0 +1,14 @@
+- create a file containing names of processed files
+- List all files from drive folder/storage bucket using gsutil
+- loop through files in list
+	- download the file using gsutil
+	- if the file name contains ".zip"
+		- unzip the file to a directory called unzipped_files
+		loop through the files in the unzipped_files directory
+		- if the filename contains the word "kolibri" and ends with ".backup"
+			- drop the temp database
+			- create the temp database
+			- restore the backup into the temp database
+			- dump the temp database with --inserts and --on-conflict-do-nothing
+			- restore the dump to the data lake
+			- add the filename to the list of processed files
