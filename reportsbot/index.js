@@ -40,8 +40,8 @@ exports.checkFile = (req, res) => {
             res.send({ text: greetingAndInstructions });
         } else {
             // Get the centre name from the message text
-            const fileName = messageText;
-            console.log(`filename ${fileName}`);
+            const centreName = messageText;
+            console.log(`centre name: ${centreName}`);
 
             /* Create a new Storage client */
             const storage = new Storage();
@@ -61,9 +61,9 @@ exports.checkFile = (req, res) => {
                     fileNames.push(...files.map(file => file.name));
 
                     /*Get the most recent activity file using the getMostRecentFile function*/
-                    const activityFile = getMostRecentFile(fileNames, 'activity', fileName);
+                    const activityFile = getMostRecentFile(fileNames, 'activity', centreName);
                     /*Get the most recent baseline file using the getMostRecentFile function*/
-                    const baselineFile = getMostRecentFile(fileNames, 'baseline', fileName);
+                    const baselineFile = getMostRecentFile(fileNames, 'baseline', centreName);
 
                     console.log(`most recent activity file: ${activityFile}`);
                     console.log(`most recent baseline file: ${baselineFile}`);
@@ -91,7 +91,7 @@ exports.checkFile = (req, res) => {
 
                             /*Send a response containing the size and created time for both activity and baseline files*/
                             res.send({
-                                text: `Report for centre *${fileName}* found.\n*Activity File*:\nsize:${activitySize}\nreceived on ${activityCreatedTime}\n\n*Baseline File (tests)*:\nsize:${baselineSize}\nreceived on ${baselineCreatedTime}`
+                                text: `Report for centre *${centreName}* found.\n*Activity File*:\nsize:${activitySize}\nreceived on ${activityCreatedTime}\n\n*Baseline File (tests)*:\nsize:${baselineSize}\nreceived on ${baselineCreatedTime}`
                             });
                         }).catch(err => {
                             /*Catch any errors and print them to the console*/
@@ -108,7 +108,7 @@ exports.checkFile = (req, res) => {
                                 /*Send a message back to the user with the details of the activity file*/
                                 /*Include in the message that no baseline file was found*/
                                 res.send({
-                                    text: `Report for centre ${fileName} exists.\n*Activity File*: size:${metadata[0].size}, received on: ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
+                                    text: `Report for centre ${centreName} exists.\n*Activity File*: size:${metadata[0].size}, received on: ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
                                 });
                             })
                             .catch(err => {
@@ -126,7 +126,7 @@ exports.checkFile = (req, res) => {
                                 /*Send a message back to the user with the details of the baseline file*/
                                 /*Include in the message that no activity file was found*/
                                 res.send({
-                                    text: `Report for centre *${fileName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\nreceived on: ${createdTime}`
+                                    text: `Report for centre *${centreName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\nreceived on: ${createdTime}`
                                 });
                             })
                             .catch(err => {
