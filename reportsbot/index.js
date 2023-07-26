@@ -180,6 +180,32 @@ function getMostRecentFile(filenames, reportType, centreId) {
     return mostRecentFilename || 'No file found';
 }
 
+/*Function which gets the month and year a report was extracted for, using the fileName*/
+function getReportMonth(filename) {
+    const regex = /\w{3}_([0-9]{2}-[0-9]{2})/;
+    const match = filename.match(regex);
+
+    if (!match) {
+        return "Invalid filename format.";
+    }
+
+    const monthYear = match[1];
+    const [month, year] = monthYear.split('-');
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    if (month < 1 || month > 12) {
+        return "Invalid month in filename.";
+    }
+
+    const readableMonth = months[month - 1];
+
+    return `${readableMonth} 20${year}`;
+}
+
+
 /*Function to convert Bytes to KB*/
 function convertBytesToKB(fileSizeInBytes) {
     const fileSizeInKB = fileSizeInBytes / 1024; // Convert bytes to kilobytes
