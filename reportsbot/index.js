@@ -31,19 +31,21 @@ exports.checkFile = (req, res) => {
 
         /*Create a personalized greeting and simple instructions on how to use the bot*/
         const greetingAndInstructions = `Hello ${senderName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there`;
-        
+
         /*Polite error message*/
-        const politeErrorMessage = "Sorry, I don't understand what you mean. Please message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there";
+        /*const politeErrorMessage = "Sorry, I don't understand what you mean. Please message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there";*/
 
         /* Log the message the user sent */
         console.log(`user: ${senderName} sent message ${messageText}`);
 
+        const commonGreetings = ["hi", "hello", "hey", "whatsup", "ola", "bonjour", "sawubona"];
+
         /* Respond to 'hi', 'hello', and messages less than 3 characters */
-        if (messageText === 'Hello' || messageText === 'Hi' || messageText.length < 3) {
+        if (commonGreetings.includes(messageText.toLowerCase().trim()) || messageText.length < 3) {
             res.send({ text: greetingAndInstructions });
         } else {
-            // Get the centre name from the message text
-            const centreName = messageText;
+            // Get the centre name from the message text. Convert to uppercase in case lowercase is submitted
+            const centreName = messageText.toUpperCase().trim();
             console.log(`centre name: ${centreName}`);
 
             /* Create a new Storage client */
@@ -97,7 +99,7 @@ exports.checkFile = (req, res) => {
 
                             /*Send a response containing the size and created time for both activity and baseline files*/
                             res.send({
-                                text: `Report for centre *${centreName}* found.\n*Activity File*:\nfor month: ${activtyMonth}\nsize: ${activitySize}\nreceived on: ${activityCreatedTime}\n\n*Baseline File (tests)*:\nfor month: ${baselineMonth}\nsize: ${baselineSize}\nreceived on: ${baselineCreatedTime}`
+                                text: `Report for centre *${centreName}* found.\n*Activity Data*:\nfor month: ${activtyMonth}\nsize: ${activitySize}\nreceived on: ${activityCreatedTime}\n\n*Assessments Data*:\nfor month: ${baselineMonth}\nsize: ${baselineSize}\nreceived on: ${baselineCreatedTime}`
                             });
                         }).catch(err => {
                             /*Catch any errors and print them to the console*/
@@ -116,7 +118,7 @@ exports.checkFile = (req, res) => {
                                 /*Send a message back to the user with the details of the activity file*/
                                 /*Include in the message that no baseline file was found*/
                                 res.send({
-                                    text: `Report for centre ${centreName} exists.\n*Activity File*: \nfor month: ${activtyMonth}\nsize: ${metadata[0].size}\nreceived on: ${createdTime}\nmodified at ${modifiedTime}.\n\nNo baseline file found.`
+                                    text: `Report for centre ${centreName} exists.\n*Activity Data*: \nfor month: ${activtyMonth}\nsize: ${metadata[0].size}\nreceived on: ${createdTime}\nmodified at ${modifiedTime}.\n\nNo assessments data found.`
                                 });
                             })
                             .catch(err => {
@@ -135,7 +137,7 @@ exports.checkFile = (req, res) => {
                                 /*Send a message back to the user with the details of the baseline file*/
                                 /*Include in the message that no activity file was found*/
                                 res.send({
-                                    text: `Report for centre *${centreName}* exists.\nNo activity file found.\n\nBaseline File:\nsize: ${metadata[0].size}\nreceived on: ${createdTime}`
+                                    text: `Report for centre *${centreName}* exists.\nNo activity data found.\n\nAssessments Data:\nsize: ${metadata[0].size}\nreceived on: ${createdTime}`
                                 });
                             })
                             .catch(err => {
