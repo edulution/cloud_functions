@@ -182,27 +182,41 @@ function getMostRecentFile(filenames, reportType, centreId) {
 
 /*Function which gets the month and year a report was extracted for, using the fileName*/
 function getReportMonth(filename) {
+    /*regex to capture the month and year from the filename*/
     const regex = /\w{3}_([0-9]{2}-[0-9]{2})/;
+    /*match the regex in the filename*/
     const match = filename.match(regex);
 
+    /*If the regex does not match any part of the filename, return an error*/
     if (!match) {
         return "Invalid filename format.";
     }
 
+    /*Store the captured part of the regex in a variable*/
     const monthYear = match[1];
+
+    /*Split the monthYear variable on the hyphen into month and year*/
     const [month, year] = monthYear.split('-');
+
+    /*Array of all complete month names*/
     const months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
 
+    /*If the month digit is less than 1 or more than 12, throw an error*/
     if (month < 1 || month > 12) {
         return "Invalid month in filename.";
     }
 
+    /*Get the full month name from the array of month names by indexing*/
     const readableMonth = months[month - 1];
 
-    return `${readableMonth} 20${year}`;
+    /*Get the full year py prefixing with 20 (assume all years are in the 21st century)*/
+    const fullYear = `20${year}`;
+
+    /*Return the readable month and full year*/
+    return `${readableMonth} ${fullYear}`;
 }
 
 
