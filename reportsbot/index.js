@@ -31,6 +31,9 @@ exports.checkFile = (req, res) => {
 
         /*Create a personalized greeting and simple instructions on how to use the bot*/
         const greetingAndInstructions = `Hello ${senderName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there`;
+        
+        /*Polite error message*/
+        const politeErrorMessage = "Sorry, I don't understand what you mean. Please message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there";
 
         /* Log the message the user sent */
         console.log(`user: ${senderName} sent message ${messageText}`);
@@ -89,9 +92,12 @@ exports.checkFile = (req, res) => {
                             const baselineSize = convertBytesToKB(baselineMetadata[0].size) + "KB";
                             const baselineCreatedTime = new Date(baselineMetadata[0].timeCreated).toLocaleDateString(userLocale, { ...dateFormatOptions, timeZone: userTimezone });
 
+                            const activtyMonth = getReportMonth(activityFile);
+                            const baselineMonth = getReportMonth(baselineFile);
+
                             /*Send a response containing the size and created time for both activity and baseline files*/
                             res.send({
-                                text: `Report for centre *${centreName}* found.\n*Activity File*:\nsize:${activitySize}\nreceived on ${activityCreatedTime}\n\n*Baseline File (tests)*:\nsize:${baselineSize}\nreceived on ${baselineCreatedTime}`
+                                text: `Report for centre *${centreName}* found.\n*Activity File*:\nfor month: ${activtyMonth}\nsize: ${activitySize}\nreceived on: ${activityCreatedTime}\n\n*Baseline File (tests)*:\nfor month: ${baselineMonth}\nsize: ${baselineSize}\nreceived on: ${baselineCreatedTime}`
                             });
                         }).catch(err => {
                             /*Catch any errors and print them to the console*/
@@ -105,10 +111,12 @@ exports.checkFile = (req, res) => {
                         reportsBucket.file(activityFile).getMetadata()
                             .then(metadata => {
                                 const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                                const activtyMonth = getReportMonth(activityFile);
+
                                 /*Send a message back to the user with the details of the activity file*/
                                 /*Include in the message that no baseline file was found*/
                                 res.send({
-                                    text: `Report for centre ${centreName} exists.\n*Activity File*: size:${metadata[0].size}, received on: ${createdTime}, modified at ${modifiedTime}.\nNo baseline file found.`
+                                    text: `Report for centre ${centreName} exists.\n*Activity File*: \nfor month: ${activtyMonth}\nsize: ${metadata[0].size}\nreceived on: ${createdTime}\nmodified at ${modifiedTime}.\n\nNo baseline file found.`
                                 });
                             })
                             .catch(err => {
@@ -123,10 +131,11 @@ exports.checkFile = (req, res) => {
                         reportsBucket.file(baselineFile).getMetadata()
                             .then(metadata => {
                                 const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                                const baselineMonth = getReportMonth(baselineFile);
                                 /*Send a message back to the user with the details of the baseline file*/
                                 /*Include in the message that no activity file was found*/
                                 res.send({
-                                    text: `Report for centre *${centreName}* exists.\nNo activity file found.\n\nBaseline File:\nsize=${metadata[0].size}\nreceived on: ${createdTime}`
+                                    text: `Report for centre *${centreName}* exists.\nNo activity file found.\n\nBaseline File:\nsize: ${metadata[0].size}\nreceived on: ${createdTime}`
                                 });
                             })
                             .catch(err => {
