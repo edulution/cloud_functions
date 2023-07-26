@@ -25,14 +25,21 @@ exports.checkFile = (req, res) => {
     if (event.type === 'MESSAGE') {
         /* Store the message text in a variable */
         const messageText = event.message.text;
+
+        /*Store the displayName of the sender in a variable*/
+        const senderName = event.user.displayName;
+
+        /*Create a personalized greeting and simple instructions on how to use the bot*/
+        const greetingAndInstructions = `Hello ${senderName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there`;
+
         /* Log the message the user sent */
-        console.log(`user: ${event.user.displayName} sent message ${messageText}`);
+        console.log(`user: ${senderName} sent message ${messageText}`);
 
         /* Respond to 'hi', 'hello', and messages less than 3 characters */
         if (messageText === 'Hello' || messageText === 'Hi' || messageText.length < 3) {
-            res.send({ text: `Hello ${event.user.displayName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there` });
+            res.send({ text: greetingAndInstructions });
         } else {
-            // Get the file name from the message text
+            // Get the centre name from the message text
             const fileName = messageText;
             console.log(`filename ${fileName}`);
 
@@ -90,7 +97,7 @@ exports.checkFile = (req, res) => {
                             /*Catch any errors and print them to the console*/
                             console.error(err);
                             /*Send a message back to the user that an error has occured*/
-                            res.send({ text: 'An error occurred while retrieving file metadata.' });
+                            res.send({ text: greetingAndInstructions });
                         });
                     } else if (activityFile) {
                         /*If only an activity file has been found*/
@@ -108,7 +115,7 @@ exports.checkFile = (req, res) => {
                                 /*Catch any errors and print them to the console*/
                                 console.error(err);
                                 /*Send a message back to the user that an error has occured*/
-                                res.send({ text: 'An error occurred while retrieving file metadata.' });
+                                res.send({ text: greetingAndInstructions });
                             });
                     } else if (baselineFile) {
                         /*If only a baseline file has been found*/
@@ -126,14 +133,14 @@ exports.checkFile = (req, res) => {
                                 /*Catch any errors and print them to the console*/
                                 console.error(err);
                                 /*Send a message back to the user that an error has occured*/
-                                res.send({ text: 'An error occurred while retrieving file metadata.' });
+                                res.send({ text: greetingAndInstructions });
                             });
                     } else {
                         /*If none of the conditions above are satified*/
                         /* Log the event type */
-                        console.log(`user: ${event.user.displayName} sent event of type ${event.type}`);
+                        console.log(`user: ${senderName} sent event of type ${event.type}`);
                         /* If the event is not a message, ask the user to send the expected kind of message */
-                        res.send({ text: `Hello ${event.user.displayName}.\nPlease message me the 3-letter acronym of a centre and I'll let you know if we've received reports from there` });
+                        res.send({ text: greetingAndInstructions });
                     }
 
 
@@ -142,7 +149,7 @@ exports.checkFile = (req, res) => {
                     /*Catch any errors and print them to the console*/
                     console.error(err);
                     /*Send a message back to the user that an error has occured*/
-                    res.send({ text: 'An error occurred. Please try again later' });
+                    res.send({ text: greetingAndInstructions });
                 });
 
 
