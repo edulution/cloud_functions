@@ -1,8 +1,8 @@
 /*Cloud function that lists all items in a GCS bucket
 Then posts the names of the items to an incoming webhook of a chat space*/
 
-const spaceWebhookURL = '';
-const bucketName = '';
+const spaceWebhookURL = process.env.TECH_NOTIFICATIONS_SPACE_WEBHOOK_URL;
+const bucketName = process.env.REPORTS_BUCKET_NAME;
 
 const { Storage } = require('@google-cloud/storage');
 const axios = require('axios');

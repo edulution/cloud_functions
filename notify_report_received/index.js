@@ -1,8 +1,8 @@
 /*Cloud function that notifies when a file is received in a GCS bucket
 Then posts the names of the file to an incoming webhook of a chat space*/
 
-const spaceWebhookURL = '';
-const bucketName = '';
+const spaceWebhookURL = process.env.TECH_NOTIFICATIONS_SPACE_WEBHOOK_URL;
+const bucketName = process.env.REPORTS_BUCKET_NAME;
 
 const axios = require('axios');
 
