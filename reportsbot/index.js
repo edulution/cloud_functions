@@ -1,5 +1,5 @@
 const { Storage } = require('@google-cloud/storage');
-const bucketName = '';
+const bucketName = process.env.REPORTS_BUCKET_NAME;
 
 const dateFormatOptions = {
     day: 'numeric',
