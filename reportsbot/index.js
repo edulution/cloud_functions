@@ -99,7 +99,7 @@ exports.checkFile = (req, res) => {
 
                             /*Send a response containing the size and created time for both activity and baseline files*/
                             res.send({
-                                text: `Report for centre *${centreName}* found.\n*Activity Data*:\n*for month: ${activtyMonth}*\nsize: ${activitySize}\nreceived on: ${activityCreatedTime}\n\n*Assessments Data*:\n*for month: ${baselineMonth}*\nsize: ${baselineSize}\nreceived on: ${baselineCreatedTime}`
+                                text: `Reports for centre *${centreName}* found.\n*Activity Data*:\nfor month: ${activtyMonth}\nsize: ${activitySize}\nreceived on: ${activityCreatedTime}\n\n*Assessments Data*:\nfor month: ${baselineMonth}\nsize: ${baselineSize}\nreceived on: ${baselineCreatedTime}`
                             });
                         }).catch(err => {
                             /*Catch any errors and print them to the console*/
@@ -113,12 +113,13 @@ exports.checkFile = (req, res) => {
                         reportsBucket.file(activityFile).getMetadata()
                             .then(metadata => {
                                 const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                                const activitySize = convertBytesToKB(metadata[0].size) + "KB";
                                 const activtyMonth = getReportMonth(activityFile);
 
                                 /*Send a message back to the user with the details of the activity file*/
                                 /*Include in the message that no baseline file was found*/
                                 res.send({
-                                    text: `Report for centre ${centreName} exists.\n*Activity Data*: \n*for month: ${activtyMonth}*\nsize: ${metadata[0].size}\nreceived on: ${createdTime}\nmodified at ${modifiedTime}.\n\nNo assessments data found.`
+                                    text: `Reports for centre ${centreName} exist.\n*Activity Data*: \nfor month: ${activtyMonth}\nsize: ${activitySize}\nreceived on: ${createdTime}\nmodified at ${modifiedTime}.\n\nNo assessments data found.`
                                 });
                             })
                             .catch(err => {
@@ -133,11 +134,12 @@ exports.checkFile = (req, res) => {
                         reportsBucket.file(baselineFile).getMetadata()
                             .then(metadata => {
                                 const createdTime = new Date(metadata[0].timeCreated).toLocaleDateString('en-US', dateFormatOptions);
+                                const baselineSize = convertBytesToKB(metadata[0].size) + "KB";
                                 const baselineMonth = getReportMonth(baselineFile);
                                 /*Send a message back to the user with the details of the baseline file*/
                                 /*Include in the message that no activity file was found*/
                                 res.send({
-                                    text: `Report for centre *${centreName}* exists.\nNo activity data found.\n\nAssessments Data:\*for month: ${baselineMonth}*\nsize: ${metadata[0].size}\nreceived on: ${createdTime}`
+                                    text: `Reports for centre *${centreName}* exist.\nNo activity data found.\n\n*Assessments Data*: \nfor month: ${baselineMonth}\nsize: ${baselineSize}\nreceived on: ${createdTime}`
                                 });
                             })
                             .catch(err => {
@@ -188,7 +190,7 @@ function getMostRecentFile(filenames, reportType, centreId) {
         }
     }
 
-    return mostRecentFilename || 'No file found';
+    return mostRecentFilename || null ;
 }
 
 /*Function which gets the month and year a report was extracted for, using the fileName*/
