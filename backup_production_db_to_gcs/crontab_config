@@ -1,0 +1,7 @@
+# Notes on how to configure crontab
+# Add this to top of crontab
+SHELL=/bin/bash
+# Add line for cron job
+# <CRON TIME> . $HOME/.profile;<ABSOLUTE PATH TO SCRIPT>  >> <PATH TO LOG FILE>
+# e.g
+# 0 2 * * * . $HOME/.profile;/home/techzm/prod_backup_gcs.sh  >> /tmp/cron_prod_backup.log
